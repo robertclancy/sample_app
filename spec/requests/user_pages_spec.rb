@@ -29,7 +29,27 @@ describe "UserPages" do
         end
       end
     end
+
+    describe "delete links" do
+
+      it { should_not have_link('delete') }
+
+      describe "as an admin user" do
+        let(:admin) { FactoryGirl.create(:admin) }
+        before do
+          sign_in admin
+          visit users_path
+        end
+
+        it { should have_link('delete', href: user_path(User.first)) }
+        it "should be able to delte another user" do
+          expect { click_link('delete') }.to change(User, :count).by(-1) 
+        end
+        it { should_not have_link('delete', href: user_path(admin)) }
+      end
+    end
   end
+
 
   describe "signup page" do
     before { visit signup_path }
@@ -80,7 +100,7 @@ describe "UserPages" do
       describe "after saving the user" do
         before { click_button submit }
         let(:user) { User.find_by_email('user@example.com') }
-        
+
         it { should have_selector('title', text: user.name) }
         it { should have_success_message('Welcome') }
         it { should have_link('Sign out') }
